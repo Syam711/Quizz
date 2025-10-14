@@ -8,8 +8,20 @@
     <link rel="stylesheet" href="{% static 'App1/css/problem.css' %}">
 </head>
 <body>
-    {% for problem in problems %}
-    {{problem.question}}
-    {% endfor %}
+    <div class="container">
+        {{problem.question}}
+    </div>
+    
+    <ol type="A">
+        {% for option in problem.options %}
+            <li>{{option}}</li>
+        {% endfor %}
+    </ol>
+
+    <div class="move">
+        <button class="previous" type="submit" value="-1">Previous</button>
+        <button class="ans" type="submit" value="0">Submit</button>
+        <button class="next" type="submit" value="1">Next</button>
+    </div>
 </body>
 </html>
