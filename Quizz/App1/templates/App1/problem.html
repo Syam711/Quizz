@@ -8,20 +8,38 @@
     <link rel="stylesheet" href="{% static 'App1/css/problem.css' %}">
 </head>
 <body>
-    <div class="container">
-        {{problem.question}}
-    </div>
-    
-    <ol type="A">
-        {% for option in problem.options %}
-            <li>{{option}}</li>
-        {% endfor %}
-    </ol>
-
-    <div class="move">
-        <button class="previous" type="submit" value="-1">Previous</button>
-        <button class="ans" type="submit" value="0">Submit</button>
-        <button class="next" type="submit" value="1">Next</button>
+    <div class="main">
+        <form action="" method="post">
+            {% csrf_token %}
+            <label for="question">Question</label>
+            <div id="question">
+                {{problem.question}}
+            </div>
+            <label for="options">Options</label>
+            <div id="options">
+                <div class="option">
+                    <input type="radio" name="option" id="A" value="0">
+                    <label for="A">{{problem.options.0}}</label>
+                </div>
+                <div class="option">
+                    <input type="radio" name="option" id="B" value="1">
+                    <label for="B">{{problem.options.1}}</label>
+                </div>
+                <div class="option">
+                    <input type="radio" name="option" id="C" value="2">
+                    <label for="C">{{problem.options.2}}</label>
+                </div>
+                <div class="option">
+                    <input type="radio" name="option" id="D" value="3">
+                    <label for="D">{{problem.options.3}}</label>
+                </div>
+            </div>
+            <div class="navigate">
+                <button type="submit" value={{ind}} name="prev">Previous</button>
+                <button type="submit" value={{ind}} name="sub">Submit</button>
+                <button type="submit" value={{ind}} name="next">Next</button>
+            </div>
+        </form>
     </div>
 </body>
 </html>
