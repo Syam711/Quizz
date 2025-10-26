@@ -9,34 +9,29 @@ def home(request):
         global problems
         problems = generator.generate(prompt)
         print(len(problems))
-        return redirect(reverse('view'))
+        global answered
+        answered = [0]*len(problems)
+        return redirect(reverse('App1:view'))
     return render(request, 'App1/promptPage.html')
 
 def view(request):
-    answered = [0]*len(problems)
     if request.method=='POST':
-        move = request.POST.get('move')
         choice = request.POST.get('option')
-        prev = request.POST.get('ind')
-        sub = request.POST.get('ind')
-        next = request.POST.get('ind')
-        if next:
-            ind = prev
-            if ind<len(problems):
+        ind = request.POST.get('ind')
+        ind = int(ind)
+        if 'next' in request.POST:
+            if ind<len(problems)-1:
                 ind += 1
                 return render(request, 'App1/problem.html', {'problem':problems[ind], 'ind':ind})
             else:
                 return render(request, 'App1/result.html', {'correct':sum(answered), 'total':len(problems)})
-        elif prev:
-            ind = prev
+        elif 'prev' in request.POST:
             if ind>0:
                 ind-=1
                 return render(request, 'App1/problem.html', {'problem':problems[ind], 'ind':ind})
             else:
-                ind = 0
-                return render(request, 'App1/problem.html', {'problem':problems[0], 'ind':ind})
+                return render(request, 'App1/problem.html', {'problem':problems[0], 'ind':0})
         else:
-            ind = sub
             res = True
             choice = int(choice)
             if problems[ind].options[choice]==problems[ind].answer:
@@ -45,7 +40,8 @@ def view(request):
             else:
                 res = False
                 answered[ind] = 0
-            return render(request, 'App1/problem.html', {'problem':problems[ind], 'res':res, 'ind':ind})
+            print(answered)
+            return render(request, 'App1/problem.html', {'problem':problems[ind], 'res':res, 'ind':ind, 'show':True})
     return render(request, 'App1/problem.html', {'problem':problems[0], 'ind':0})
 
 def result(request):

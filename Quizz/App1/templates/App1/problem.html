@@ -11,6 +11,7 @@
     <div class="main">
         <form action="" method="post">
             {% csrf_token %}
+            <input type="hidden" name="ind" value="{{ ind }}">
             <label for="question">Question</label>
             <div id="question">
                 {{problem.question}}
@@ -34,10 +35,25 @@
                     <label for="D">{{problem.options.3}}</label>
                 </div>
             </div>
+            <div class="results">
+                <div>
+                    {% if show %}
+                        {% if res %}
+                            <h3>Correct answer</h3>
+                        {% else %}
+                            <h3>Oops... Close...</h3>
+                        {% endif %}
+                        <h4>Explanation:</h4>
+                        <p>{{ problem.explanation }}</p>
+                        <h4>Answer :</h4>
+                        <p>{{ problem.answer }}</p>
+                    {% endif %}
+                </div>
+            </div>
             <div class="navigate">
-                <button type="submit" value={{ind}} name="prev">Previous</button>
-                <button type="submit" value={{ind}} name="sub">Submit</button>
-                <button type="submit" value={{ind}} name="next">Next</button>
+                <button type="submit" name="prev">Previous</button>
+                <button type="submit" name="submit">Submit</button>
+                <button type="submit" name="next">Next</button>
             </div>
         </form>
     </div>
