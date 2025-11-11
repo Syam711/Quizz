@@ -1,0 +1,5 @@
+djnago
+
+google-genai
+
+pydantic
