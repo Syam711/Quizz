@@ -3,3 +3,7 @@ django
 google-genai
 
 pydantic
+
+gunicorn
+
+whitenoise
