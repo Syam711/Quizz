@@ -1,0 +1,8 @@
+{% load static %}
+<nav>
+    <link rel="stylesheet" href="{% static 'App1/css/navbar.css' %}">
+    <a href="{% url 'App1:home' %}"><div class="title">Prompt2Quiz</div></a>
+    <a href="{% url 'App1:home' %}"><div class="items"><abbr title="Start a new Quiz">New Quiz</abbr></div></a>
+    <a href="#"><div class="items"><abbr title="Coming Soon">History</abbr></div></a>
+    <a href="#"><div class="items"><abbr title="Coming Soon">Help</abbr></div></a>
+</nav>

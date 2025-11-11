@@ -1,15 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
 body{
     margin: 0;
     padding: 0;
+    font-family: "Montserrat", sans-serif;
+    font-display: swap;
+    font-weight: 100 900;
+    background-color: rgb(32, 33, 36);
+    color: white;
+}
+
+input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #f0f0f0 inset !important;
+    -webkit-text-fill-color: rgb(151, 158, 178) !important;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+.container{
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: rgba(79, 78, 78, 0.575);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    height: 90vh;
 }
 
-.container{
+main{
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -18,6 +35,7 @@ body{
 
 h1{
     font-size: 50px;
+    margin: 0;
 }
 
 form{
@@ -29,7 +47,13 @@ form{
     justify-content: start;
     align-items: center;
     border-radius: 50px;
-    background-color: white;
+    background-color: rgb(151, 158, 178);
+    transition: 0.5s ease;
+    padding: 0;
+}
+
+form:focus-within{
+    box-shadow: 0 0 10px 0 white;
 }
 
 input{
@@ -40,12 +64,19 @@ input{
     font-size: 20px;
     border-radius: 50px 0px 0px 50px;
     padding-left: 20px;
+    background-color: rgb(151, 158, 178);
 }
 
 button{
     width: 50px;
     height: 50px;
     border-radius: 100%;
-    background-color: black;
-    color: white;
+    background-color: white;
+    color: black;
+    border: none;
+    font-size: 20px;
+}
+
+button:hover{
+    cursor: pointer;
 }

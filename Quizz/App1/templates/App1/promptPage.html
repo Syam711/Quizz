@@ -5,20 +5,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quizz</title>
+    <title>Prompt2Quiz</title>
     <link rel="stylesheet" href="{% static 'App1/css/promptPage.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 </head>
 <body>
+    {% include 'App1/navbar.html' %}
     <div class="container">
-        <h1>Welcome, Give me the topic</h1>
-        <form action="" method="POST">
-            {% csrf_token %}
-            <input type="text" placeholder="Enter your topic here" name="prompt" required>
-            <button type="submit">
-                <i class="fa-solid fa-arrow-up"></i>
-            </button>
-        </form>
+        <main>
+            <h1>Welcome, Give me the topic</h1>
+            <form action="" method="POST">
+                {% csrf_token %}
+                <input type="text" placeholder="Enter your topic here" name="prompt" required autofocus>
+                <button type="submit">
+                    <i class="fa-solid fa-arrow-up"></i>
+                </button>
+            </form>
+        </main>
         
     </div>
 </body>

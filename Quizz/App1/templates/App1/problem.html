@@ -4,49 +4,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>{{ problem.topic }}</title>
     <link rel="stylesheet" href="{% static 'App1/css/problem.css' %}">
 </head>
 <body>
+    {% include 'App1/navbar.html' %}
     <div class="main">
         <form action="" method="post">
             {% csrf_token %}
             <input type="hidden" name="ind" value="{{ ind }}">
-            <label for="question">Question</label>
+            <label for="question" class="heading">Question {{ ind | add:1 }}</label>
             <div id="question">
-                {{problem.question}}
+    <pre>
+        {{problem.question}}
+    </pre> 
             </div>
-            <label for="options">Options</label>
+            <label for="options" class="heading">Options</label>
             <div id="options">
-                <div class="option">
-                    <input type="radio" name="option" id="A" value="0">
-                    <label for="A">{{problem.options.0}}</label>
-                </div>
-                <div class="option">
-                    <input type="radio" name="option" id="B" value="1">
-                    <label for="B">{{problem.options.1}}</label>
-                </div>
-                <div class="option">
-                    <input type="radio" name="option" id="C" value="2">
-                    <label for="C">{{problem.options.2}}</label>
-                </div>
-                <div class="option">
-                    <input type="radio" name="option" id="D" value="3">
-                    <label for="D">{{problem.options.3}}</label>
-                </div>
+                <label for="A">
+                    <div class="option">
+                        <input type="radio" name="option" id="A" value="0">
+    <pre>{{ problem.options.0 }}</pre>
+                    </div>
+                </label>
+                <label for="B">
+                    <div class="option">
+                        <input type="radio" name="option" id="B" value="1">
+    <pre>{{problem.options.1}}</pre>
+                    </div>
+                </label>
+                <label for="C">
+                    <div class="option">
+                        <input type="radio" name="option" id="C" value="2">
+    <pre>{{problem.options.2}}</pre>
+                    </div>
+                </label>
+                <label for="D">
+                    <div class="option">
+                        <input type="radio" name="option" id="D" value="3">
+    <pre>{{problem.options.3}}</pre>
+                    </div>
+                </label>
+                
             </div>
             <div class="results">
                 <div>
                     {% if show %}
                         {% if res %}
-                            <h3>Correct answer</h3>
+                            <h3 class="heading">Correct answer</h3>
                         {% else %}
-                            <h3>Oops... Close...</h3>
+                            <h3 class="heading">Oops... Close...</h3>
                         {% endif %}
-                        <h4>Explanation:</h4>
-                        <p>{{ problem.explanation }}</p>
-                        <h4>Answer :</h4>
-                        <p>{{ problem.answer }}</p>
+                        <h4 class="heading">Explanation:</h4>
+                        <pre>{{ problem.explanation }}</pre>
+                        <h4 calss="heading">Answer :</h4>
+                        <pre>{{ problem.answer }}</pre>
                     {% endif %}
                 </div>
             </div>

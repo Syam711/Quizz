@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+body{
+    margin: 0;
+    padding: 0;
+    font-family: "Montserrat", sans-serif;;
+    font-display: swap;
+    font-weight: 100 900;
+    background-color: rgb(32, 33, 36);
+    color: white;
+}
+
+.main{
+    margin: 30px 10px 10px 20px;
+}
+pre{
+    font-size: 20px;
+    font-family: 'new-font';
+    white-space: pre-wrap;
+    word-wrap: break-word;
+
+}
+
+.option{
+    min-height: 30px;
+    background-color: rgb(105, 109, 109);
+    border-radius: 10px;
+    margin: 10px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.option pre, .option input{
+    margin-left: 20px;
+    font-size: 17px;
+    padding: 0;
+}
+
+.option:hover, .option label:hover, input:checked{
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.heading{
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.navigate{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+button{
+    margin: 10px;
+    border-radius: 10px;
+    min-width: 100px;
+    min-height: 30px;
+    font-size: 18px;
+    background-color: #4ea8de;
+    text-align: center;
+    padding: 5px;
+}
+
+button:nth-of-type(3){
+    background-color: #f5c542;
+}
+button:nth-of-type(2){
+    background-color: #3fcf8e;
+}
+
+button:hover{
+    cursor: pointer;
+    box-shadow: 0 0 10px white;
+}
+
+.results pre{
+    text-indent: 50px;
+}
