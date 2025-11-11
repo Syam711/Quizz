@@ -1,4 +1,4 @@
-djnago
+django
 
 google-genai
 
