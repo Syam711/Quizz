@@ -16,13 +16,22 @@
             <h1>Welcome, Give me the topic</h1>
             <form action="" method="POST">
                 {% csrf_token %}
-                <input type="text" placeholder="Enter your topic here" name="prompt" required autofocus>
+                <input type="text" placeholder="Enter your topic here" name="prompt" required autofocus autocomplete="off">
                 <button type="submit">
                     <i class="fa-solid fa-arrow-up"></i>
                 </button>
             </form>
         </main>
-        
     </div>
+    <div class="loading">
+        <div class="loading-container">
+            <div class="loader"></div>
+            <div class="loading-text"></div>
+        </div>
+    </div>
+
+    {% include 'App1/footer.html' %}
+
+    <script src="{% static 'App1/JS/promptPage.js' %}"></script>
 </body>
 </html>

@@ -1,4 +1,6 @@
 {% load static %}
+{{ problem | json_script:"problem" }}
+{{ ind | json_script:"ind" }}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ problem.topic }}</title>
     <link rel="stylesheet" href="{% static 'App1/css/problem.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="../../static/App1/css/problem.css">
 </head>
 <body>
     {% include 'App1/navbar.html' %}
@@ -49,25 +53,29 @@
             </div>
             <div class="results">
                 <div>
-                    {% if show %}
-                        {% if res %}
-                            <h3 class="heading">Correct answer</h3>
-                        {% else %}
-                            <h3 class="heading">Oops... Close...</h3>
-                        {% endif %}
-                        <h4 class="heading">Explanation:</h4>
-                        <pre>{{ problem.explanation }}</pre>
-                        <h4 calss="heading">Answer :</h4>
-                        <pre>{{ problem.answer }}</pre>
-                    {% endif %}
+                    <h3 class="heading"></h3>
+                    <h4 class="heading">Explanation:</h4>
+                    <pre>{{ problem.explanation }}</pre>
+                    <h4 calss="heading">Answer :</h4>
+                    <pre>{{ problem.answer }}</pre>
                 </div>
             </div>
             <div class="navigate">
-                <button type="submit" name="prev">Previous</button>
-                <button type="submit" name="submit">Submit</button>
-                <button type="submit" name="next">Next</button>
+                <button type="submit" name="prev" id="prev">Previous</button>
+                <button type="submit" name="submit" id="submit">Submit</button>
+                <button type="submit" name="next" id="next">Next</button>
             </div>
         </form>
     </div>
+
+    <aside>
+        <i class="fa-solid fa-circle-question"></i>
+        <a href="https://www.google.com/search?q=https://www.google.com/search?q={{ problem.question }}" target="_blank">
+            Still confused? Search Google →
+        </a>
+    </aside>
+
+    <script src="{% static 'App1/JS/problem.js' %}"></script>
+
 </body>
 </html>

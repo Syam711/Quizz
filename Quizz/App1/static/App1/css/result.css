@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+body{
+    margin: 0;
+    padding: 0;
+    font-family: "Montserrat", sans-serif;;
+    font-display: swap;
+    font-weight: 100 900;
+    background-color: rgb(32, 33, 36);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.navi > a{
+    text-decoration: none;
+    padding: 10px;
+    text-align: center;
+    background-color: rgb(1, 179, 1);
+    font-weight: bold;
+    color: black;
+    margin: 10px;
+    border-radius: 5px;
+}
+
+.navi > a:hover{
+    background-color: rgb(0, 255, 0);
+}
+
+
+.contain{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    flex: 1;
+}
+
+.circle{
+    width: 250px;
+    height: 250px;
+    border-radius: 100%;
+    border: 2px ridge white;
+    background-color: rgb(157, 253, 157);
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    margin: 50px 0px;
+}
+
+#review{
+    display: none;
+    font-size: 20px;
+    padding: 20px 30px;
+}
+
+.problem{
+    background-color: rgb(86, 86, 86);
+    margin: 10px 0px;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+pre{
+    font-size: 20px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+#review > h2 {
+    text-align: center;
+}

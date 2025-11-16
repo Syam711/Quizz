@@ -16,10 +16,9 @@ body{
 }
 pre{
     font-size: 20px;
-    font-family: 'new-font';
     white-space: pre-wrap;
     word-wrap: break-word;
-
+    padding-left: 20px;
 }
 
 .option{
@@ -76,6 +75,69 @@ button:hover{
     box-shadow: 0 0 10px white;
 }
 
+.results{
+    display: none;
+}
 .results pre{
     text-indent: 50px;
+}
+
+/* aside{
+    position: fixed;
+    display: block;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    background-color: #2F3C62;
+    color: #D8DEF4;
+}
+
+aside *{
+    margin:0;
+}
+
+aside a{
+    text-decoration: none;
+    padding: 5px 10px;
+    background-color: rgb(116, 185, 255);
+    color: black;
+    border-radius: 50px;;
+} */
+
+aside {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+
+    background: #1E2C3A;
+    padding: .55rem .75rem;
+    border-radius: 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .45);
+
+    display: none;
+    align-items: center;
+    gap: .5rem;
+    font-size: .85rem;
+}
+
+aside i {
+    color: #9FC7FF;
+    font-size: 1rem;
+}
+
+aside a {
+    color: #CFE3FF;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color .2s ease;
+}
+
+aside a:hover {
+    color: #E7F1FF;
 }

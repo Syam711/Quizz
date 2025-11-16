@@ -1,12 +1,40 @@
+{% load static %}
+{{ correct | json_script:"correct"}}
+{{ total | json_script:"total"}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Results</title>
+    <link rel="stylesheet" href="{% static 'App1/css/result.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 </head>
 <body>
-    <h1>{{correct}}/{{total}}</h1>
-    <a href="{% url 'App1:home' %} ">Take test again</a>
+    {% include 'App1/navbar.html' %}
+    <div class="contain">
+        <div class="circle">
+            <h1>{{correct}}/{{total}}</h1>
+        </div>
+        <div class="navi">
+            <a href="{% url 'App1:home' %} ">New Quiz</a>
+            <a href="#review" id="toReview">Review</a>
+        </div>
+    </div>
+    
+    <div id="review">
+        <h2>Revision</h2>
+        {% for problem in problems %}
+            <div class="problem">
+                    <pre>Q{{forloop.counter}}: {{ problem.question }}</pre>
+                    <pre>Ans: {{ problem.answer }}</pre>
+                    <pre>Exp: {{ problem.explanation }}</pre>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% include 'App1/footer.html' %}
+
+    <script src="{% static 'App1/JS/result.js' %}"></script>
 </body>
 </html>

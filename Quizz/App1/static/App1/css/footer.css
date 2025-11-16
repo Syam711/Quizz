@@ -1,0 +1,32 @@
+.footer {
+    position: relative;
+    bottom:0px;
+    background-color: #242424;
+    color: #f0f0f0;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 60px; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.footer-link {
+    color: #f0f0f0;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: #1da1f2;
+}
+
+.footer .icon {
+    font-size: 1rem;
+}

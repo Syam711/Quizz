@@ -6,7 +6,7 @@ nav{
     font-weight: 600;
 }
 
-a{
+nav > a{
     color: white;
     text-decoration: none;
 }
@@ -15,7 +15,7 @@ abbr{
     text-decoration: none;
 }
 
-a:first-of-type{
+nav > a:first-of-type{
     width: 80%;
     font-size: 30px;
     font-weight: bold;

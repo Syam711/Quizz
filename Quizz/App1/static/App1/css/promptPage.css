@@ -8,22 +8,17 @@ body{
     font-weight: 100 900;
     background-color: rgb(32, 33, 36);
     color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
-
-input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus,
-  input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px #f0f0f0 inset !important;
-    -webkit-text-fill-color: rgb(151, 158, 178) !important;
-    transition: background-color 9999s ease-in-out 0s;
-  }
 
 .container{
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 90vh;
+    width: auto;
+    flex: 1;
 }
 
 main{
@@ -39,7 +34,7 @@ h1{
 }
 
 form{
-    height: 60px;
+    height: 55px;
     width: 800px;
     border: 1px solid black;
     margin-top: 100px;
@@ -47,13 +42,13 @@ form{
     justify-content: start;
     align-items: center;
     border-radius: 50px;
-    background-color: rgb(151, 158, 178);
+    background-color: rgb(88, 88, 88);
     transition: 0.5s ease;
     padding: 0;
 }
 
 form:focus-within{
-    box-shadow: 0 0 10px 0 white;
+    box-shadow: 0 0 10px 0 rgb(207, 207, 207);
 }
 
 input{
@@ -63,15 +58,16 @@ input{
     outline: none;
     font-size: 20px;
     border-radius: 50px 0px 0px 50px;
-    padding-left: 20px;
-    background-color: rgb(151, 158, 178);
+    padding: 0px 10px 0 20px;
+    background-color: rgb(88, 88, 88);
+    color: white;
 }
 
 button{
-    width: 50px;
-    height: 50px;
+    width: 5.5%;
+    height: 80%;
     border-radius: 100%;
-    background-color: white;
+    background-color: rgb(215, 215, 215);
     color: black;
     border: none;
     font-size: 20px;
@@ -79,4 +75,38 @@ button{
 
 button:hover{
     cursor: pointer;
+}
+
+.loading{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+}
+
+.loading-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.loader {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 30px;
+    border: 6px solid #555;
+    border-top: 6px solid #f0f0f0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text{
+    transition: 0.5s linears;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
