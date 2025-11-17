@@ -103,17 +103,24 @@ form.addEventListener("submit", (e)=>{
 
     if (clicked.name==='submit'){
         e.preventDefault()
+        let s = document.querySelector('#submit')
+        s.disabled = true
         let results = document.querySelector('.results')
         let heading = results.querySelector('h3')
         let aside = document.querySelector('aside')
-        console.log(option, problem.answer, problem.options[option])
+        let options = document.querySelectorAll('.option')
+        for (let i=0; i<4; i++){
+            if (problem.answer==problem.options[i]) {
+                options[i].style.backgroundColor = `rgba(0, 255, 17, 0.54)`
+                if (i!=option) options[option].style.backgroundColor = `rgba(255, 0, 0, 0.29)`
+            }
+            
+        }
         if (problem.answer==problem.options[option]) heading.innerText = getRightResponse()
         else heading.innerText = getWrongResponse()
         results.style.display = 'block'
         aside.style.display = 'flex'
     }
-    
-    console.log(problem)
 })
 
 let ind = document.getElementById('ind').textContent
