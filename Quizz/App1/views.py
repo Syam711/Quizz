@@ -9,8 +9,11 @@ def home(request):
     try:
         if request.method=='POST':
             prompt = request.POST.get('prompt')
+            num_questions = request.POST.get('num_questions')
+            difficulty = request.POST.get('difficulty')
+            model = request.POST.get('model')
             global problems
-            problems = generator.generate(prompt)
+            problems = generator.generate(prompt, model, num_questions, difficulty)
             request.session['answered'] = [False]*len(problems)
             request.session['score'] = [0]*len(problems)
             return redirect(reverse('App1:view'))

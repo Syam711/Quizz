@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-esm)(-3qq_tx-u)8*n)6elq2zavz(%o246a(==*0g#mf9wg8f2
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    'prompt2quiz-306f.onrender.com'
+    'prompt2quiz-306f.onrender.com',
 ]
 
 

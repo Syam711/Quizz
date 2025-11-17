@@ -10,13 +10,13 @@ class Problem(BaseModel):
     topic: str  = Field(description="Name of the topic on which the prompt is on")
 
 class ProblemSet(BaseModel):
-    problems: list[Problem] = Field(description="List of quizz questions asked on the topic and format the text according to the question. like for example if the problem is on a code then that code should have proper indentation and structure. The difficulty of questions should follow 2:2:1 ratio of easy:medium:hard respectively, unless the difficulty is mentioned in the prompt.")
+    problems: list[Problem] = Field(description="List of quiz questions asked on the topic and format the text according to the question. like for example if the problem is on a code then that code should have proper indentation and structure. For easy difficulty the questions should follow 2:2:1 ratio of easy:medium:hard respectively, for medium 1:2:2 and for hard 0:1:4. If the prompt mentions certain type of problems, try giving those type of problems and also make sure the order of the questions is not ordered by their difficulty. Make the options difficult to choose.")
 
-def generate(query):
+def generate(query, model, num_questions, difficulty):
     client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
     response = client.models.generate_content(
-        model = "gemini-2.5-pro",
-        contents = query,
+        model = model,
+        contents = query + f'of {num_questions} questions' + f'on {difficulty} mode',
         config={
             'response_mime_type':'application/json',
             'response_schema': ProblemSet

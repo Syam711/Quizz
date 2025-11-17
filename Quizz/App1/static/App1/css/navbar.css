@@ -25,3 +25,34 @@ nav > a:first-of-type{
 .items{
     margin: 0 15px;
 }
+
+@media (max-width: 900px) {
+    nav > a:first-of-type {
+        font-size: 26px;
+    }
+
+    .items {
+        margin: 0 10px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 600px) {
+    nav {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        text-align: center;
+    }
+
+    nav > a:first-of-type {
+        width: 100%;
+        font-size: 24px;
+        padding: 5px 0;
+    }
+
+    .items {
+        margin: 5px 0;
+        font-size: 0.95rem;
+    }
+}

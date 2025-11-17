@@ -30,3 +30,29 @@
 .footer .icon {
     font-size: 1rem;
 }
+
+@media (max-width: 900px) {
+    .footer {
+        gap: 30px;
+        font-size: 0.75rem;
+        padding: 12px 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .footer {
+        flex-direction: column;
+        gap: 15px;
+        padding: 20px 0;
+        text-align: center;
+    }
+
+    .footer-link {
+        gap: 5px;
+        font-size: 0.85rem;
+    }
+
+    .footer .icon {
+        font-size: 0.9rem;
+    }
+}

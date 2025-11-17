@@ -11,18 +11,59 @@
 </head>
 <body>
     {% include 'App1/navbar.html' %}
+    
     <div class="container">
         <main>
             <h1>Welcome, Give me the topic</h1>
-            <form action="" method="POST">
+            
+            <form action="" method="POST" id="promptForm">
                 {% csrf_token %}
-                <input type="text" placeholder="Enter your topic here" name="prompt" required autofocus autocomplete="off">
-                <button type="submit">
-                    <i class="fa-solid fa-arrow-up"></i>
-                </button>
+                
+                <div class="input-row">
+                    <button type="button" class="toggle-btn" id="settingsToggle">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+
+                    <input type="text" class="main-input" placeholder="Enter your topic here" name="prompt" required autofocus autocomplete="off">
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </div>
+
+                <div class="settings-row">
+                    
+                    <div class="setting-group">
+                        <i class="fa-solid fa-list-ol"></i>
+                        <input type="number" name="num_questions" class="num-input" value="5" min="1" max="50">
+                    </div>
+
+                    <div class="setting-group setting-select">
+                        <span class="selected-value">Model 1</span>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                        <select name="model">
+                            <option value="gemini-2.5-flash" selected>Model 1</option>
+                            <option value="gemini-2.5-pro">Model 2</option>
+                            <option value="gemini-2.5-flash-lite">Model 3</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group setting-select">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span class="selected-value">Easy</span>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                        <select name="difficulty">
+                            <option value="easy" selected>Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+
+                </div>
             </form>
         </main>
     </div>
+
     <div class="loading">
         <div class="loading-container">
             <div class="loader"></div>
