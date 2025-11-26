@@ -72,19 +72,57 @@ These settings allow deeper customization without forcing the user to understand
   
   ---
 
-# Available Models  
+# Available Models
 
-## Model 1 — Gemini 2.5 Flash  
-Fast and efficient. Produces good-quality questions quickly. Best for everyday use or rapid quiz creation.
+The quiz generator offers three different models, each suited for a different type of quiz and level of complexity.
 
-## Model 2 — Gemini 2.5 Pro  
-More advanced reasoning, deeper explanations, and better structure. Ideal for technical subjects or exam-level quizzes.
+## Model 1 — Gemini 2.5 Flash
+Fast and efficient. Produces good-quality questions quickly.  
+Best for everyday quizzes and rapid practice.
 
-## Model 3 — Gemini 2.5 Flash Lite  
-Lightweight version designed for simple or broad-topic quizzes. Best for basic learning or early exploration.
+- Typically generates **5–12 questions** per request  
+- Questions are clear and concise  
+- Explanations are short and to the point  
 
 ---
 
+## Model 2 — Gemini 2.5 Pro
+Stronger reasoning and more detailed structure.  
+Best for technical subjects or exam-level quizzes.
+
+- Typically generates **5–10 detailed questions**  
+- Explanations are richer and more thorough  
+- Handles complex topics more effectively  
+
+---
+
+## Model 3 — Gemini 2.5 Flash Lite
+Lightweight version designed for simple or broad-topic quizzes.  
+Best for basic learning or quick checks.
+
+- Typically generates **3–6 simple questions**  
+- Questions are short and direct  
+- Minimal explanation detail  
+
+---
+
+# Which Model Should You Choose?
+
+### Choose **Gemini 2.5 Flash** if:
+- You want quick, good-quality quizzes  
+- You prefer short explanations  
+- You need a balanced model for general topics  
+
+### Choose **Gemini 2.5 Pro** if:
+- You need accurate, exam-level questions  
+- Your topic is technical or requires in-depth understanding  
+- You want higher reasoning quality  
+
+### Choose **Gemini 2.5 Flash Lite** if:
+- You want very simple, short quizzes  
+- You're exploring a broad or basic topic  
+- You prefer fast generation with minimal detail
+---
 # FAQ  
 
 ### **Q1. Can the app generate quizzes from large text paragraphs?**  
@@ -108,7 +146,6 @@ Absolutely. The results page includes a complete review panel.
 
 ### **1. The quiz isn’t generating.**  
 - Check if the prompt field is empty  
-- Verify that the server deployment is active  
 - Try reducing the number of questions  
 
 ### **2. The Google search popup isn’t showing.**  
@@ -118,7 +155,29 @@ Absolutely. The results page includes a complete review panel.
 ### **3. I’m seeing repeated questions.**  
 - Try switching AI models  
 - Adjust the difficulty  
-- Provide a more specific topic  
+- Provide a more specific topic
+
+
+# Handling Quiz Generation Errors (HTTP 500)
+
+Occasionally, you may encounter an **“Internal Server Error (HTTP 500)”** while generating a quiz. This is a temporary issue and does not indicate a problem with your device or setup.
+
+## Why It Happens
+A 500 error simply means the quiz service was unable to complete your request at that moment. This can occur if the prompt is unusually detailed or if the service experiences a brief slowdown.
+
+## What You Can Do
+
+### 1. Try Again After a Short Pause
+Wait a few seconds and retry the same request.  
+Most interruptions resolve quickly.
+
+### 2. Simplify the Prompt
+If the error repeats, try reducing the length or complexity of your prompt.
+
+## If the Issue Continues
+The service may be temporarily overloaded. Trying again later usually resolves the problem.
+
+If the error persists even with simple prompts, you can **report it through the app’s bug report section** so it can be reviewed.
 
 ---
 
