@@ -25,6 +25,10 @@ form.addEventListener("submit", (e) => {
     loading_container.style.display = 'flex';
     loading.style.display = `flex`;
     
+    answered = []
+    sessionStorage.clear()
+    sessionStorage.setItem('answered', JSON.stringify(answered))
+
     form.submit();
 
     let ind = 0;
@@ -56,4 +60,14 @@ document.querySelectorAll('.setting-select select').forEach(selectElement => {
     if (initialSelected) {
         selectedValueSpan.textContent = initialSelected.text;
     }
+});
+
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    let loading_container = document.querySelector('.loading-container');
+    let container = document.querySelector('.container');
+    
+    container.style.display = 'flex';
+    loading_container.style.display = 'none';
+  }
 });

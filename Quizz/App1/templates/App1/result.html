@@ -36,13 +36,32 @@
     {% include 'App1/footer.html' %}
 
     <script src="{% static 'App1/JS/result.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
         window.MathJax = {
         tex: {
-            inlineMath: [['\\(','\\)']]
+            inlineMath: [
+            ['\\(', '\\)'],  
+            ['$', '$'],    
+            ['\\begin{math}', '\\end{math}'] 
+            ],
+            displayMath: [
+            ['$$', '$$'],       
+            ['\\[', '\\]'],     
+            ['\\begin{displaymath}', '\\end{displaymath}'] 
+            ],
+            packages: {
+            '[+]': ['ams']       
+            }
+        },
+        loader: {
+            load: ['[tex]/ams']
+        },
+        options: {
+            skipHtmlTags: ['script','noscript','style','textarea'] 
         }
         };
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </body>
 </html>

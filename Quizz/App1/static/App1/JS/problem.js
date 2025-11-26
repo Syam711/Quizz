@@ -94,39 +94,76 @@ function getWrongResponse() {
     return wrongResponses[Math.floor(Math.random() * wrongResponses.length)];
 }
 
+let ind = document.getElementById('ind').textContent
 let form = document.querySelector('form')
 let problem = JSON.parse(document.querySelector('#problem').textContent)
-form.addEventListener("submit", (e)=>{
-    let clicked = e.submitter
-    let data = new FormData(form)
-    let option = data.get('option')
 
-    if (clicked.name==='submit'){
-        e.preventDefault()
-        let s = document.querySelector('#submit')
-        s.disabled = true
-        let results = document.querySelector('.results')
-        let heading = results.querySelector('h3')
-        let aside = document.querySelector('aside')
-        let options = document.querySelectorAll('.option')
-        for (let i=0; i<4; i++){
-            if (problem.answer==problem.options[i]) {
-                options[i].style.backgroundColor = `rgba(0, 255, 17, 0.54)`
-                if (i!=option) options[option].style.backgroundColor = `rgba(255, 0, 0, 0.29)`
-            }
-            
-        }
-        if (problem.answer==problem.options[option]) heading.innerText = getRightResponse()
-        else heading.innerText = getWrongResponse()
-        results.style.display = 'block'
-        aside.style.display = 'flex'
-    }
-})
-
-let ind = document.getElementById('ind').textContent
 if (ind==0){
     let prev = document.querySelector('#prev')
     prev.disabled = true
 }
 
+function isAnswered(){
+    answered = JSON.parse(sessionStorage.getItem('answered'))
 
+    if (answered.length>ind && answered[ind][0]===true){
+        tmp = ['A', 'B', 'C', 'D']
+        document.getElementById(tmp[answered[ind][1]]).checked = true
+        validate(answered[ind][1])
+    }
+}
+
+isAnswered()
+
+form.addEventListener("submit", (e)=>{
+    let clicked = e.submitter
+    let data = new FormData(form)
+    let option = data.get('option')
+        
+    if (clicked.name==='submit'){
+        e.preventDefault()
+        validate(option)
+    }
+
+    if (answered[ind]==null){
+        if (option!=null){
+            answered[ind] = [true, option]
+        }
+        else{
+            answered[ind] = [false, null]
+        }
+    }
+    else{
+        if (answered[ind][0]===false && option!=null){
+            answered[ind] = [true, option]
+        }
+    }
+
+    sessionStorage.setItem('answered', JSON.stringify(answered))
+})
+
+function validate(option){
+    let s = document.querySelector('#submit')
+    s.disabled = true
+    let results = document.querySelector('.results')
+    let heading = results.querySelector('h3')
+    let aside = document.querySelector('aside')
+    let options = document.querySelectorAll('.option')
+    for (let i=0; i<4; i++){
+        if (problem.answer==problem.options[i]) {
+            options[i].style.backgroundColor = `rgba(0, 255, 17, 0.54)`
+            if (i!=option) options[option].style.backgroundColor = `rgba(255, 0, 0, 0.29)`
+        }
+        
+    }
+    if (problem.answer==problem.options[option]) heading.innerText = getRightResponse()
+    else heading.innerText = getWrongResponse()
+    results.style.display = 'block'
+    aside.style.display = 'flex'
+}
+
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    isAnswered()
+  }
+});
