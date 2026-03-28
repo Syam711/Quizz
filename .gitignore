@@ -1,5 +1,0 @@
-README.md
-.vscode/*
-!.vscode/extensions.json
-__pycache__
-.gitignore
