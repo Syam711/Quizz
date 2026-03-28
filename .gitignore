@@ -1,0 +1,6 @@
+README.md
+.vscode/*
+!.vscode/extensions.json
+__pycache__
+migrations
+db.sqlite3
