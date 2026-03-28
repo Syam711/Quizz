@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class GoogleLoginView(SocialLoginView):
-    """Accepts Google credential/access_token, returns JWT pair."""
+
     adapter_class = GoogleOAuth2Adapter
-    callback_url  = "postmessage"          # for one-tap / credential flow
+    callback_url  = "https://p2q.onrender.com"   # must match an authorised JS origin
     client_class  = OAuth2Client
 
 
@@ -40,20 +40,17 @@ class UserProfileView(APIView):
 
 
 def update_streak(user: User) -> None:
-    """
-    Called after every completed quiz for an authenticated user.
-    Updates current_streak and longest_streak.
-    """
+    """Called after every completed quiz for an authenticated user."""
     today = date.today()
 
     if user.last_quiz_date is None:
         user.current_streak = 1
     elif user.last_quiz_date == today:
-        pass  # already done today — no change
+        pass
     elif user.last_quiz_date == today - timedelta(days=1):
         user.current_streak += 1
     else:
-        user.current_streak = 1  # streak broken
+        user.current_streak = 1
 
     user.last_quiz_date = today
     if user.current_streak > user.longest_streak:

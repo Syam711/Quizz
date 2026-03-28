@@ -149,3 +149,15 @@ USE_I18N      = True
 USE_TZ        = True
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+
+
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "unsafe-none"
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER    = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE      = True
+    CSRF_COOKIE_SECURE         = True
+    CSRF_TRUSTED_ORIGINS       = [
+        "https://p2q.onrender.com",
+        "https://p2q-server.onrender.com",
+    ]
