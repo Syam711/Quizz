@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
-import LandingPage     from "./components/LandingPage.jsx";
+import LandingPage     from "./components/LoadingPage.jsx";
 import WarmupScreen    from "./components/WarmupScreen.jsx";
 import GeneratingScreen from "./components/GeneratingScreen.jsx";
 
