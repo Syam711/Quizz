@@ -2,6 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # Health check — must be first, no auth, no DB
+    path("health/",                           views.HealthCheckView.as_view()),
+
     path("quiz/generate/",                    views.GenerateQuizView.as_view()),
     path("quiz/history/",                     views.QuizHistoryView.as_view()),
     path("quiz/simplify/",                    views.SimplifyTopicView.as_view()),

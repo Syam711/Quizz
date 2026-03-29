@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
+import LandingPage     from "./components/LandingPage.jsx";
+import WarmupScreen    from "./components/WarmupScreen.jsx";
+import GeneratingScreen from "./components/GeneratingScreen.jsx";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const API_BASE        = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
@@ -669,6 +672,40 @@ function useCooldown() {
   return { remaining: rem, isOnCooldown: rem > 0, startCooldown: () => { storage.setCooldown(); setRem(storage.getCooldownRem()); } };
 }
 
+// ─── BACKEND HEALTH HOOK ─────────────────────────────────────────────────────
+function useBackendHealth() {
+  const [status, setStatus] = useState("checking"); // checking | ready | cold
+
+  useEffect(() => {
+    let cancelled  = false;
+    let intervalId = null;
+
+    const check = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/health/`, {
+          signal: AbortSignal.timeout(4000),
+          cache:  "no-store",
+        });
+        if (res.ok && !cancelled) {
+          setStatus("ready");
+          clearInterval(intervalId);
+        }
+      } catch {
+        if (!cancelled) setStatus("cold");
+      }
+    };
+
+    // First check immediately
+    check();
+    // Then poll every 5 seconds while cold
+    intervalId = setInterval(check, 5000);
+
+    return () => { cancelled = true; clearInterval(intervalId); };
+  }, []);
+
+  return status;
+}
+
 // ─── CONFETTI ─────────────────────────────────────────────────────────────────
 function confetti() {
   const canvas = document.createElement("canvas");
@@ -751,7 +788,11 @@ function GoogleBtn({ onSuccess, label = "Continue with Google" }) {
       </button>
     );
   }
-  return <div ref={ref} />;
+  return (
+    <div style={{ display:"flex", justifyContent:"center", alignItems:"center", width:"100%" }}>
+      <div ref={ref} />
+    </div>
+  );
 }
 
 // ─── NAVBAR ───────────────────────────────────────────────────────────────────
@@ -1047,7 +1088,8 @@ function HomePage({ onQuizReady }) {
   const [settingsOpen,setSettingsOpen]= useState(false);
   const [loading,     setLoading]     = useState(false);
   const [batchProg,   setBatchProg]   = useState({ done:0, total:1 });
-  const [statusMsg,   setStatusMsg]   = useState("Generating your quiz…");
+  const [fallbackNote,setFallbackNote]= useState("");
+
   const [topics,      setTopics]      = useState({});
 
   const shellRef = useRef(null);
@@ -1059,13 +1101,7 @@ function HomePage({ onQuizReady }) {
 
   useEffect(() => { apiFetch("/topics/").then(setTopics).catch(()=>{}); }, []);
 
-  const MSGS = ["Generating your quiz…","Crafting questions…","Polishing explanations…","Almost there…"];
-  useEffect(() => {
-    if (!loading) return;
-    let i = 0;
-    const id = setInterval(() => { i=(i+1)%MSGS.length; setStatusMsg(MSGS[i]); }, 2200);
-    return () => clearInterval(id);
-  }, [loading]);
+  // Status messages now handled by GeneratingScreen component
 
   const handleChange = useCallback((k, v) => {
     setSettings(p => {
@@ -1104,21 +1140,11 @@ function HomePage({ onQuizReady }) {
 
   // Generating screen
   if (loading) return (
-    <div className="d-flex flex-column align-items-center justify-content-center gap-4 page-enter" style={{flex:1,padding:"80px 20px",minHeight:"calc(100vh - 110px)"}}>
-      <div className="p2q-spinner" />
-      <div className="text-center">
-        <div style={{fontWeight:600,fontSize:"1.0625rem",marginBottom:6}}>{statusMsg}</div>
-        <div className="mono" style={{fontSize:".8125rem",color:"var(--c-muted)"}}>"{simplified||topic}"</div>
-      </div>
-      <div className="text-center">
-        <div className="mono mb-2" style={{fontSize:".6875rem",color:"#3f3f46"}}>batch {batchProg.done+1} / {batchProg.total}</div>
-        <div className="d-flex gap-2 justify-content-center">
-          {Array.from({length:batchProg.total}).map((_,i)=>(
-            <div key={i} className={`batch-dot ${i<batchProg.done?"done":i===batchProg.done?"active":""}`} />
-          ))}
-        </div>
-      </div>
-    </div>
+    <GeneratingScreen
+      topic={simplified||topic}
+      batchProg={batchProg}
+      fallbackNote={fallbackNote}
+    />
   );
 
   return (
@@ -1700,6 +1726,8 @@ function HistoryPage({ onBack }) {
 
 // ─── APP ──────────────────────────────────────────────────────────────────────
 function AppShell() {
+  const backendStatus = useBackendHealth();
+
   useEffect(() => {
     injectAssets();
     if (!GOOGLE_CLIENT_ID || document.getElementById("gsi")) return;
@@ -1709,26 +1737,50 @@ function AppShell() {
     document.head.appendChild(s);
   }, []);
 
-  const [page,       setPage]       = useState("home");
+  // Pages: landing | warmup | home | quiz | results | history
+  const [page,       setPage]       = useState("landing");
   const [quiz,       setQuiz]       = useState(null);
   const [result,     setResult]     = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // Auto-advance from warmup to home when backend becomes ready
+  useEffect(() => {
+    if (backendStatus === "ready" && page === "warmup") {
+      setPage("home");
+    }
+  }, [backendStatus, page]);
+
   const goHome = () => { setPage("home"); setQuiz(null); setResult(null); };
+
+  // When user clicks "Start a quiz" on landing page
+  const handleEnter = () => {
+    if (backendStatus === "ready") {
+      setPage("home");
+    } else {
+      // Backend cold — show warmup while it wakes up
+      setPage("warmup");
+    }
+  };
+
+  const showNav = page !== "landing";
 
   return (
     <div style={{ display:"flex", flexDirection:"column", minHeight:"100vh" }}>
-      <Navbar page={page} quizMeta={quiz && (page==="quiz"||page==="results") ? {topic:quiz.topic,difficulty:quiz.difficulty} : null}
-        onHome={goHome} onHistory={()=>setPage("history")} onProfile={()=>setDrawerOpen(true)} />
+      {showNav && (
+        <Navbar page={page} quizMeta={quiz && (page==="quiz"||page==="results") ? {topic:quiz.topic,difficulty:quiz.difficulty} : null}
+          onHome={goHome} onHistory={()=>setPage("history")} onProfile={()=>setDrawerOpen(true)} />
+      )}
 
       <div style={{flex:1,display:"flex",flexDirection:"column"}}>
-        {page==="home"    && <HomePage    onQuizReady={d=>{setQuiz(d);setPage("quiz");}} />}
-        {page==="quiz"    && quiz && <QuizPage quiz={quiz} onFinish={(r,q)=>{setResult(r);setQuiz(q);setPage("results");}} />}
-        {page==="results" && result && quiz && <ResultsPage result={result} quiz={quiz} onNewQuiz={goHome} onHistory={()=>setPage("history")} />}
-        {page==="history" && <HistoryPage onBack={goHome} />}
+        {page==="landing"  && <LandingPage  onEnter={handleEnter} backendStatus={backendStatus} />}
+        {page==="warmup"   && <WarmupScreen onReady={()=>setPage("home")} />}
+        {page==="home"     && <HomePage    onQuizReady={d=>{setQuiz(d);setPage("quiz");}} />}
+        {page==="quiz"     && quiz && <QuizPage quiz={quiz} onFinish={(r,q)=>{setResult(r);setQuiz(q);setPage("results");}} />}
+        {page==="results"  && result && quiz && <ResultsPage result={result} quiz={quiz} onNewQuiz={goHome} onHistory={()=>setPage("history")} />}
+        {page==="history"  && <HistoryPage onBack={goHome} />}
       </div>
 
-      <Footer />
+      {showNav && <Footer />}
       <ProfileDrawer open={drawerOpen} onClose={()=>setDrawerOpen(false)} />
     </div>
   );

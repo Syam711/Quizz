@@ -1,4 +1,8 @@
 import logging
+from datetime import timedelta
+
+from django.utils     import timezone
+from django.core.cache import cache
 from rest_framework.views       import APIView
 from rest_framework.response    import Response
 from rest_framework             import status
@@ -16,6 +20,15 @@ from . import generator
 from accounts.views import update_streak
 
 logger = logging.getLogger(__name__)
+
+# ── Whitelisted emails — full unrestricted access ─────────────────────────────
+WHITELISTED_EMAILS = {
+    "bashyamshyam123@gmail.com",
+}
+
+# ── Quota settings ────────────────────────────────────────────────────────────
+IP_QUOTA_LIMIT  = 5          # max quizzes per IP per window
+IP_QUOTA_WINDOW = 12 * 3600  # 12 hours in seconds
 
 TOPIC_SUGGESTIONS = {
     "Computer Science": [
@@ -41,10 +54,57 @@ TOPIC_SUGGESTIONS = {
 }
 
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def get_client_ip(request):
+    """Extract real IP, respecting reverse-proxy headers (Render uses these)."""
+    xff = request.META.get("HTTP_X_FORWARDED_FOR")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR", "unknown")
+
+
+def is_whitelisted(request):
+    """Return True if the authenticated user is in the whitelist."""
+    return (
+        request.user.is_authenticated
+        and request.user.email in WHITELISTED_EMAILS
+    )
+
+
+def check_ip_quota(request):
+    """
+    Returns (allowed: bool, remaining: int, reset_in_seconds: int).
+    Uses Django's cache backend (memory by default, works on single-instance Render).
+    """
+    if is_whitelisted(request):
+        return True, IP_QUOTA_LIMIT, 0
+
+    ip  = get_client_ip(request)
+    key = f"ip_quota_{ip}"
+    ttl_key = f"ip_quota_ttl_{ip}"
+
+    count = cache.get(key, 0)
+    if count >= IP_QUOTA_LIMIT:
+        # Calculate seconds until reset
+        reset_in = cache.ttl(ttl_key) if hasattr(cache, "ttl") else IP_QUOTA_WINDOW
+        return False, 0, reset_in or IP_QUOTA_WINDOW
+
+    # Increment counter; set expiry only on first use
+    if count == 0:
+        cache.set(key, 1, IP_QUOTA_WINDOW)
+        cache.set(ttl_key, True, IP_QUOTA_WINDOW)
+    else:
+        cache.incr(key)
+
+    remaining = IP_QUOTA_LIMIT - (count + 1)
+    return True, remaining, 0
+
+
 # ── Throttles ─────────────────────────────────────────────────────────────────
 
 class GenerateBurstThrottle(SimpleRateThrottle):
-    """3 generations per 5 minutes per IP/user."""
+    """3 generations per minute per IP/user (burst protection)."""
     scope = "generate_burst"
 
     def get_cache_key(self, request, view):
@@ -73,10 +133,7 @@ def _throttle_429(throttle):
     wait        = throttle.wait()
     retry_after = int(wait) + 1 if wait else 60
     return Response(
-        {
-            "error":       f"Too many requests. Wait {retry_after}s.",
-            "retry_after": retry_after,
-        },
+        {"error": f"Too many requests. Wait {retry_after}s.", "retry_after": retry_after},
         status=status.HTTP_429_TOO_MANY_REQUESTS,
         headers={"Retry-After": str(retry_after)},
     )
@@ -88,26 +145,58 @@ def _ensure_session(request):
     return request.session.session_key
 
 
-def _difficulty_suggestion(results: list) -> str:
+def _difficulty_suggestion(results):
     if not results:
         return ""
     pct = sum(1 for r in results if r["correct"]) / len(results)
     return "complex" if pct >= 0.85 else "simple"
 
 
+# ── Health check ──────────────────────────────────────────────────────────────
+
+class HealthCheckView(APIView):
+    """
+    GET /api/health/
+    Lightweight liveness probe — no DB queries, no auth.
+    Used by the frontend to detect cold starts.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+
 # ── Generate ──────────────────────────────────────────────────────────────────
 
 class GenerateQuizView(APIView):
     permission_classes = [AllowAny]
-    # NOTE: throttle_classes NOT set here — we check manually for custom 429
 
     def post(self, request):
-        # Manual throttle check so we can return retry_after
+        # 1. Burst + hourly throttle
         for ThrottleCls in [GenerateBurstThrottle, GenerateHourlyThrottle]:
             t = ThrottleCls()
             if not t.allow_request(request, self):
                 return _throttle_429(t)
 
+        # 2. IP 12-hour quota (5 per IP, bypassed for whitelisted emails)
+        allowed, remaining, reset_in = check_ip_quota(request)
+        if not allowed:
+            hours = reset_in // 3600
+            mins  = (reset_in % 3600) // 60
+            return Response(
+                {
+                    "error": (
+                        f"You've reached the limit of {IP_QUOTA_LIMIT} quizzes per 12 hours. "
+                        f"Try again in {hours}h {mins}m."
+                    ),
+                    "retry_after": reset_in,
+                    "quota_exceeded": True,
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        # 3. Validate input
         ser = GenerateQuizSerializer(data=request.data)
         if not ser.is_valid():
             return Response({"errors": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -115,6 +204,7 @@ class GenerateQuizView(APIView):
         d           = ser.validated_data
         session_key = _ensure_session(request)
 
+        # 4. Generate
         try:
             result = generator.generate(
                 topic         = d["topic"],
@@ -125,28 +215,20 @@ class GenerateQuizView(APIView):
             )
         except EnvironmentError as e:
             logger.error(str(e))
-            return Response(
-                {"error": "Server configuration error. Contact support."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"error": "Server configuration error."}, status=500)
         except ValueError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e)}, status=400)
         except RuntimeError as e:
             logger.error(str(e))
             return Response(
-                {
-                    "error":      str(e),
-                    "suggestion": "Try fewer questions or a simpler topic.",
-                },
+                {"error": str(e), "suggestion": "Try fewer questions or a simpler topic."},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except Exception as e:
             logger.exception(e)
-            return Response(
-                {"error": "Unexpected error. Please try again."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"error": "Unexpected error. Please try again."}, status=500)
 
+        # 5. Persist
         quiz = QuizSession.objects.create(
             user             = request.user if request.user.is_authenticated else None,
             session_key      = session_key,
@@ -156,7 +238,6 @@ class GenerateQuizView(APIView):
             model_name       = result.model_used,
             num_questions    = len(result.problems),
         )
-
         Question.objects.bulk_create([
             Question(
                 quiz             = quiz,
@@ -170,21 +251,21 @@ class GenerateQuizView(APIView):
             )
             for i, p in enumerate(result.problems)
         ])
-
         QuizAttempt.objects.create(quiz=quiz)
 
         return Response(
             {
                 **QuizSessionSerializer(quiz).data,
-                "warnings":       result.warnings,
-                "model_used":     result.model_used,
-                "fallbacks_used": result.fallbacks_used,
+                "warnings":        result.warnings,
+                "model_used":      result.model_used,
+                "fallbacks_used":  result.fallbacks_used,
+                "quota_remaining": remaining,
             },
             status=status.HTTP_201_CREATED,
         )
 
 
-# ── Detail ────────────────────────────────────────────────────────────────────
+# ── Detail / Shared ───────────────────────────────────────────────────────────
 
 class QuizDetailView(APIView):
     permission_classes = [AllowAny]
@@ -221,21 +302,16 @@ class SubmitAnswerView(APIView):
         is_owner    = request.user.is_authenticated and quiz.user == request.user
         if not (is_owner or quiz.session_key == session_key):
             return Response({"error": "Forbidden."}, status=status.HTTP_403_FORBIDDEN)
-
         attempt, _ = QuizAttempt.objects.get_or_create(quiz=quiz)
         if attempt.completed:
-            return Response({"error": "Quiz already submitted."}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"error": "Already submitted."}, status=400)
         ser = SubmitAnswerSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"errors": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"errors": ser.errors}, status=400)
         order  = str(ser.validated_data["question_order"])
         chosen = ser.validated_data["chosen_index"]
-
         if not quiz.questions.filter(order=ser.validated_data["question_order"]).exists():
-            return Response({"error": "Invalid question order."}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"error": "Invalid question order."}, status=400)
         attempt.answers[order] = chosen
         attempt.save(update_fields=["answers", "updated_at"])
         return Response({"saved": True})
@@ -249,11 +325,9 @@ class BookmarkView(APIView):
     def post(self, request, quiz_id):
         quiz       = get_object_or_404(QuizSession, id=quiz_id)
         attempt, _ = QuizAttempt.objects.get_or_create(quiz=quiz)
-
         ser = BookmarkSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"errors": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"errors": ser.errors}, status=400)
         order = ser.validated_data["question_order"]
         bm    = set(attempt.bookmarks)
         bm.add(order) if ser.validated_data["bookmarked"] else bm.discard(order)
@@ -271,11 +345,9 @@ class FlagView(APIView):
         session_key = _ensure_session(request)
         ser = FlagSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"errors": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"errors": ser.errors}, status=400)
         quiz     = get_object_or_404(QuizSession, id=quiz_id)
         question = get_object_or_404(Question, quiz=quiz, order=ser.validated_data["question_order"])
-
         if request.user.is_authenticated:
             _, created = QuestionFlag.objects.get_or_create(
                 question=question, user=request.user,
@@ -286,13 +358,11 @@ class FlagView(APIView):
                 question=question, session_key=session_key,
                 defaults={"reason": ser.validated_data["reason"], "note": ser.validated_data.get("note", "")},
             )
-
         if created:
             question.flag_count += 1
             if question.flag_count >= 5:
                 question.is_hidden = True
             question.save(update_fields=["flag_count", "is_hidden"])
-
         return Response({"flagged": created, "flag_count": question.flag_count})
 
 
@@ -306,11 +376,10 @@ class FinishQuizView(APIView):
         quiz        = get_object_or_404(QuizSession, id=quiz_id)
         is_owner    = request.user.is_authenticated and quiz.user == request.user
         if not (is_owner or quiz.session_key == session_key):
-            return Response({"error": "Forbidden."}, status=status.HTTP_403_FORBIDDEN)
-
+            return Response({"error": "Forbidden."}, status=403)
         attempt, _ = QuizAttempt.objects.get_or_create(quiz=quiz)
         if attempt.completed:
-            return Response({"error": "Already submitted."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Already submitted."}, status=400)
 
         time_taken = request.data.get("time_taken_seconds", 0)
         questions  = list(quiz.questions.all())
@@ -328,15 +397,11 @@ class FinishQuizView(APIView):
             if correct:
                 score += 1
             results.append({
-                "order":            q.order,
-                "question":         q.question,
-                "options":          q.options,
-                "answer":           q.answer,
-                "explanation":      q.explanation,
-                "topic":            q.topic,
+                "order": q.order, "question": q.question,
+                "options": q.options, "answer": q.answer,
+                "explanation": q.explanation, "topic": q.topic,
                 "difficulty_label": q.difficulty_label,
-                "chosen_index":     chosen_idx,
-                "correct":          correct,
+                "chosen_index": chosen_idx, "correct": correct,
             })
 
         suggested = _difficulty_suggestion(results)
@@ -344,22 +409,16 @@ class FinishQuizView(APIView):
         attempt.completed            = True
         attempt.time_taken_seconds   = time_taken
         attempt.suggested_difficulty = suggested
-        attempt.save(update_fields=[
-            "score", "completed", "time_taken_seconds",
-            "suggested_difficulty", "updated_at",
-        ])
+        attempt.save(update_fields=["score","completed","time_taken_seconds","suggested_difficulty","updated_at"])
 
         if request.user.is_authenticated:
             update_streak(request.user)
 
         return Response({
-            "score":                score,
-            "total":                len(questions),
-            "percentage":           round(score / len(questions) * 100) if questions else 0,
-            "results":              results,
-            "bookmarks":            attempt.bookmarks,
-            "suggested_difficulty": suggested,
-            "time_taken_seconds":   time_taken,
+            "score": score, "total": len(questions),
+            "percentage": round(score / len(questions) * 100) if questions else 0,
+            "results": results, "bookmarks": attempt.bookmarks,
+            "suggested_difficulty": suggested, "time_taken_seconds": time_taken,
         })
 
 
@@ -372,13 +431,10 @@ class ShareView(APIView):
         quiz = get_object_or_404(QuizSession, id=quiz_id, user=request.user)
         ser  = ShareSettingsSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"errors": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"errors": ser.errors}, status=400)
         quiz.is_public = ser.validated_data["is_public"]
         quiz.save(update_fields=["is_public"])
-        return Response({
-            "is_public":   quiz.is_public,
-            "share_token": str(quiz.share_token),
-        })
+        return Response({"is_public": quiz.is_public, "share_token": str(quiz.share_token)})
 
 
 # ── History ───────────────────────────────────────────────────────────────────
@@ -394,9 +450,8 @@ class QuizHistoryView(APIView):
         total    = quizzes.count()
         return Response({
             "quizzes": QuizHistorySerializer(quizzes[start:start + per_page], many=True).data,
-            "total":   total,
-            "page":    page,
-            "pages":   max(1, (total + per_page - 1) // per_page),
+            "total": total, "page": page,
+            "pages": max(1, (total + per_page - 1) // per_page),
         })
 
 
@@ -418,7 +473,7 @@ class SimplifyTopicView(APIView):
         import os
         raw = request.data.get("topic", "").strip()
         if not raw:
-            return Response({"error": "No topic provided."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "No topic provided."}, status=400)
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             return Response({"simplified": raw, "original": raw})
